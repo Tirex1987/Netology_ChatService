@@ -5,7 +5,7 @@ import users.Users
 val users = Users()
 var selectUserId = 0
 
-fun main(){
+fun main() {
     users.add(User("Ярополк", "Петров", "Luxor"))
     users.add(User("Семен", "Семенов", "Semen"))
     users.add(User("Иван", "Иванов", "Ivan"))
@@ -37,16 +37,16 @@ fun main(){
 
         } while (selectAction != 4)
 
-    }while (true)
+    } while (true)
 
 }
 
-fun inputNumber(text: String, max: Int) : Int {
+fun inputNumber(text: String, max: Int): Int {
     do {
         ColorText.print(text, ColorText.FONT_GREEN)
-        try{
+        try {
             val input = readLine()?.trim()?.toInt() ?: throw NumberFormatException()
-            if ((max != 0) && (input <= 0 || input > max)){
+            if ((max != 0) && (input <= 0 || input > max)) {
                 throw NumberFormatException()
             }
             return input
@@ -56,9 +56,9 @@ fun inputNumber(text: String, max: Int) : Int {
     } while (true)
 }
 
-fun createNewChat(){
+fun createNewChat() {
     ColorText.println("Выберите собеседника:", ColorText.FONT_YELLOW)
-    users.get().forEach{
+    users.get().forEach {
         if (it.key != selectUserId) {
             ColorText.println("${it.value.nickname}, id = ${it.key}", ColorText.FONT_YELLOW)
         }
@@ -67,9 +67,9 @@ fun createNewChat(){
     var companionId: Int
     do {
         companionId = inputNumber("Введите id пользователя: ", 0)
-    }while (!users.get().containsKey(companionId) || companionId == selectUserId)
+    } while (!users.get().containsKey(companionId) || companionId == selectUserId)
 
-    if (ChatService.isChat(selectUserId, companionId)){
+    if (ChatService.isChat(selectUserId, companionId)) {
         ColorText.printlnError("Чат с пользователем ${users.getNickname(companionId)} уже есть:")
         openChat(ChatService.getChatId(selectUserId, companionId))
         return
@@ -85,36 +85,39 @@ fun printAllChats() {
     ColorText.println("Текущие чаты:", ColorText.FONT_YELLOW)
     val currentChats = ChatService.getChats(selectUserId)
 
-    if (currentChats.isEmpty()){
+    if (currentChats.isEmpty()) {
         ColorText.printlnError("Нет текущих чатов!")
         return
     }
 
     currentChats.forEach {
         val userId = if (it.value.firstUserId != selectUserId) it.value.firstUserId else it.value.secondUserId
-        ColorText.println("${users.getNickname(userId)}, id чата = ${it.key}", ColorText.FONT_YELLOW) }
+        ColorText.println("${users.getNickname(userId)}, id чата = ${it.key}", ColorText.FONT_YELLOW)
+    }
 
     var chatId: Int
     do {
         chatId = inputNumber("Введите id чата или 0 для возврата: ", 0)
-    }while (!currentChats.containsKey(chatId) && chatId != 0)
+    } while (!currentChats.containsKey(chatId) && chatId != 0)
 
-    if (chatId != 0){
+    if (chatId != 0) {
         openChat(chatId)
     }
 }
 
 fun openChat(chatId: Int) {
     val messages = ChatService.getMessages(chatId)
+
     val nick = if (ChatService.getChat(chatId).firstUserId != selectUserId)
         users.getNickname(ChatService.getChat(chatId).firstUserId)
     else users.getNickname(ChatService.getChat(chatId).secondUserId)
+
     val unreadMessages = ChatService.getUnreadMessages(selectUserId, chatId)
     val unreadMessagesId = if (unreadMessages.isNotEmpty()) unreadMessages[0].id else 0
 
     ChatService.openChat(selectUserId, chatId)
     messages.forEach {
-        if (unreadMessagesId == it.id){
+        if (unreadMessagesId == it.id) {
             ColorText.println("Новые сообщения:", ColorText.FONT_VIOLETTE)
         }
         val color = if (selectUserId == it.userId) ColorText.FONT_TURQUOISE else ColorText.FONT_BLUE
@@ -142,7 +145,7 @@ fun openChat(chatId: Int) {
             }
             2 -> editMessage(chatId)
             3 -> {
-                if (removeMessage(chatId)){
+                if (removeMessage(chatId)) {
                     ColorText.println("Чат удалён!", ColorText.FONT_VIOLETTE)
                     return
                 }
@@ -157,7 +160,7 @@ fun openChat(chatId: Int) {
                 return
             }
         }
-    }while (chatAction != 6)
+    } while (chatAction != 6)
 }
 
 fun editMessage(chatId: Int) {
@@ -169,9 +172,9 @@ fun editMessage(chatId: Int) {
         if (message != null && message.userId != selectUserId) {
             ColorText.printlnError("Невозможно редактировать сообщение другого пользователя")
         }
-    }while ((message == null || message.userId != selectUserId) && messageId != 0)
+    } while ((message == null || message.userId != selectUserId) && messageId != 0)
 
-    if (messageId == 0){
+    if (messageId == 0) {
         return
     }
 
@@ -185,34 +188,35 @@ fun printUnreadChats() {
     ColorText.println("Чаты с непрочитанными сообщениями: ", ColorText.FONT_YELLOW)
     val unreadChats = ChatService.getUnreadChats(selectUserId)
 
-    if (unreadChats.isEmpty()){
+    if (unreadChats.isEmpty()) {
         ColorText.printlnError("Нет чатов с новыми сообщениями!")
         return
     }
 
     unreadChats.forEach {
         val userId = if (it.value.firstUserId != selectUserId) it.value.firstUserId else it.value.secondUserId
-        ColorText.println("${users.getNickname(userId)}, id чата = ${it.key}", ColorText.FONT_YELLOW) }
+        ColorText.println("${users.getNickname(userId)}, id чата = ${it.key}", ColorText.FONT_YELLOW)
+    }
 
     var chatId: Int
     do {
         chatId = inputNumber("Введите id чата или 0 для возврата: ", 0)
-    }while (!unreadChats.containsKey(chatId) && chatId != 0)
+    } while (!unreadChats.containsKey(chatId) && chatId != 0)
 
-    if (chatId != 0){
+    if (chatId != 0) {
         openChat(chatId)
     }
 }
 
-fun removeMessage(chatId: Int) : Boolean {
+fun removeMessage(chatId: Int): Boolean {
     val messages = ChatService.getMessages(chatId)
     var messageId: Int
     do {
         messageId = inputNumber("Введите id сообщения или 0 для отмены: ", 0)
         val message = messages.find { it.id == messageId }
-    }while (message == null && messageId != 0)
+    } while (message == null && messageId != 0)
 
-    if (messageId == 0){
+    if (messageId == 0) {
         return false
     }
     ColorText.println("Сообщение удалено!", ColorText.FONT_VIOLETTE)
