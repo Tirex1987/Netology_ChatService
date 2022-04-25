@@ -15,36 +15,29 @@ object ChatService {
     }
 
     fun getChatId(firstUserId: Int, secondUserId: Int): Int {
-        chats.forEach {
-            if (it.value.firstUserId == firstUserId && it.value.secondUserId == secondUserId
-                || it.value.firstUserId == secondUserId && it.value.secondUserId == firstUserId
-            ) return it.key
-        }
+        chats.asSequence()
+            .find { it.value.firstUserId == firstUserId && it.value.secondUserId == secondUserId
+                    || it.value.firstUserId == secondUserId && it.value.secondUserId == firstUserId }
+            ?.let { return it.key }
         return 0
     }
 
-    fun getChats(userId: Int): Map<Int, Chat> {
-        return chats.filter { it.value.firstUserId == userId || it.value.secondUserId == userId }
+    fun getChats(userId: Int): Map<Int, Chat> = chats.filter {
+        it.value.firstUserId == userId || it.value.secondUserId == userId
     }
 
-    fun getChat(chatId: Int): Chat {
-        return chats[chatId] ?: throw ChatNotFoundException("Chat id=$chatId not found")
-    }
+    fun getChat(chatId: Int): Chat = chats[chatId] ?: throw ChatNotFoundException("Chat id=$chatId not found")
 
     fun isChat(firstUserId: Int, secondUserId: Int): Boolean = getChatId(firstUserId, secondUserId) != 0
 
-    fun removeChat(chatId: Int): Chat? {
-        return chats.remove(chatId)
-    }
+    fun removeChat(chatId: Int): Chat? = chats.remove(chatId)
 
-    fun addMessage(userId: Int, chatId: Int, text: String): Int {
-        return chats[chatId]?.addMessage(userId, text) ?: throw ChatNotFoundException("Chat id=$chatId not found")
-    }
+    fun addMessage(userId: Int, chatId: Int, text: String): Int = chats[chatId]?.addMessage(userId, text)
+        ?: throw ChatNotFoundException("Chat id=$chatId not found")
 
-    fun updateMessage(userId: Int, chatId: Int, messageId: Int, text: String): Boolean {
-        return chats[chatId]?.updateMessage(userId, messageId, text)
+    fun updateMessage(userId: Int, chatId: Int, messageId: Int, text: String): Boolean =
+        chats[chatId]?.updateMessage(userId, messageId, text)
             ?: throw ChatNotFoundException("Chat id=$chatId not found")
-    }
 
     fun removeMessage(chatId: Int, messageId: Int): Boolean {
         chats[chatId]?.removeMessage(messageId) ?: throw ChatNotFoundException("Chat id=$chatId not found")
@@ -60,9 +53,8 @@ object ChatService {
 
     private fun isUnreadMessagesInChat(userId: Int, chatId: Int) = getUnreadMessages(userId, chatId).isNotEmpty()
 
-    fun getUnreadChats(userId: Int): Map<Int, Chat> {
-        val userChats = getChats(userId)
-        return userChats.filter { isUnreadMessagesInChat(userId, it.key) }
+    fun getUnreadChats(userId: Int): Map<Int, Chat> = getChats(userId).filter {
+        isUnreadMessagesInChat(userId, it.key)
     }
 
     fun getUnreadChatsCount(userId: Int) : Int = getUnreadChats(userId).size

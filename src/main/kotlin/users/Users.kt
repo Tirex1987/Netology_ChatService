@@ -4,14 +4,13 @@ class Users {
     private val users = mutableMapOf<Int, User>()
     private var lastId = 0
 
-    fun add(user: User): Int {
-        users[++lastId] = user.copy(id = lastId)
-        return lastId
+    fun add(user: User): Int = users.let {
+        it[++lastId] = user.copy(id = lastId)
+        lastId
     }
 
-    fun get(id: Int): User {
-        return users[id] ?: throw UserNotFoundException("User id=$id not found")
-    }
+    fun get(id: Int): User = users[id] ?: throw UserNotFoundException("User id=$id not found")
+
 
     fun get() = users
 

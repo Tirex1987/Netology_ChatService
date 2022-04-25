@@ -13,10 +13,10 @@ class Chat(
 
     constructor(firstUser: User, secondUser: User) : this(firstUser.id, secondUser.id)
 
-    fun addMessage(userId: Int, text: String) : Int{
-        val id = if (messages.size == 0) 1 else messages.last().id + 1
-        messages.add(Message(userId, text, LocalDateTime.now(), id = id))
-        return messages.last().id
+    fun addMessage(userId: Int, text: String) = messages.run {
+        val id = if (isEmpty()) 1 else last().id + 1
+        add(Message(userId, text, LocalDateTime.now(), id = id))
+        last().id
     }
 
     fun updateMessage(userId: Int, messageId: Int, text: String): Boolean {
@@ -24,7 +24,9 @@ class Chat(
         if (indexMessage < 0 || messages[indexMessage].userId != userId) {
             return false
         }
-        messages[indexMessage].copy(text = text, changed = true).also { messages[indexMessage] = it }
+        messages[indexMessage]
+            .copy(text = text, changed = true)
+            .also { messages[indexMessage] = it }
         return true
     }
 
@@ -44,7 +46,9 @@ class Chat(
         return true
     }
 
-    private fun indexMessageById(messageId: Int): Int = messages.indexOf(messages.find { it.id == messageId })
+    private fun indexMessageById(messageId: Int): Int = messages.indexOf(
+        messages.find { it.id == messageId }
+    )
 
     fun getUnreadMessages(userId: Int): List<Message> =
         messages.filter { it.userId != userId && it.id > lastReadiedMessageId }
@@ -56,7 +60,9 @@ class Chat(
     }
 
     fun getMessages(messageIdFrom: Int, messageIdTo: Int): List<Message> =
-        messages.filter { it.id in messageIdFrom..messageIdTo }
+        messages.asSequence()
+            .filter{ it.id in messageIdFrom..messageIdTo }
+            .toList()
 
     fun getMessages(): List<Message> = messages
 
